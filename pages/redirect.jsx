@@ -1,8 +1,9 @@
-import { useRouter } from 'next/router'
 import Head from 'next/head'
 import { FaSearch } from "react-icons/fa"
 import { useState } from 'react'
+
 import styles from '../styles/Redirect.module.css'
+import Track from '../components/Track'
 
 export default function Redirect() {
 
@@ -10,7 +11,10 @@ export default function Redirect() {
   const [artistsList, setArtistsList] = useState([])
   const [albumList, setAlbumList] = useState([])
   const [playlistList, setPlaylistList] = useState([])
-  const [imagesList, setImagesList] = useState([])
+  const [showArtist, setShowArtist] = useState(true)
+  const [showAlbum, setShowAlbum] = useState(false)
+  const [showPlaylist, setShowPlaylist] = useState(false)
+  const [buttonV, setButtonV] = useState(false)
 
   const getToken = () => { 
     var hashParams = {};
@@ -24,22 +28,59 @@ export default function Redirect() {
     return(hashParams)
   }
 
-  const handleSearch = async () => {
+  const handleOnKeyDown = (e) => {
+    if (e.key === 13 || e.key === 'Enter') {
+      handleSearch()
+    }
 
+  }
+
+  const handleSearch = async () => {
+    setButtonV(true)
     const params = getToken()
     const token = params.access_token
+    console.log(token)
 
-    const response = await fetch(`https://api.spotify.com/v1/search?query=${searchTerm}&type=album,playlist,artist`, {
+    const response = await fetch(`https://api.spotify.com/v1/search?query=${searchTerm}&type=album,playlist,artist,track`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
     const json = await response.json()
-    console.log(json.artists.items)
+    console.log(json.tracks.items)
     setArtistsList(json.artists.items)
     setAlbumList(json.albums.items)
     setPlaylistList(json.playlists.items)
   }
+
+  const hadleShowArtist = () => {
+    if (showArtist === true) {
+      setShowArtist(false)
+    } else {
+      setShowArtist(true)
+      setShowPlaylist(false)
+      setShowAlbum(false)
+    }
+  }
+  const hadleShowAlbum = () => {
+    if (showAlbum === true) {
+      setShowAlbum(false)
+    } else {
+      setShowAlbum(true)
+      setShowArtist(false)
+      setShowPlaylist(false)
+    }
+  }
+  const hadleShowPlaylist = () => {
+    if (showPlaylist === true) {
+      setShowPlaylist(false)
+    } else {
+      setShowPlaylist(true)
+      setShowArtist(false)
+      setShowAlbum(false)
+    }
+  }
+
 
   return (
     <div className={styles.container}>
@@ -54,35 +95,36 @@ export default function Redirect() {
           Bem vindo(a) ao <strong>Music Finder</strong>
         </h1>
         <div className={styles.input_container}>
-          <input type="text" placeholder="Artistas, músicas ou podcast" onChange={e=> setSearchTerm(e.target.value)} value={searchTerm}/>
+          <input type="text" placeholder="Artistas, álbuns ou playlists" onChange={e=> setSearchTerm(e.target.value)} value={searchTerm} onKeyDown={handleOnKeyDown}/>
           <button onClick={handleSearch}><FaSearch /></button>
         </div>
-
-        <div className={styles.artist_container}>
-        {artistsList.map((artist, key)=>(
-            <div className={styles.artist} key={key}>
-              <img src={artist.images.url}/>
-              <h1>{artist.name}</h1>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.album_container}>
-        {albumList.map(album=>(
-            <div className={styles.album}>
-              <h1>{album.name}</h1>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.playlist_container}>
-        {playlistList.map(playlist=>(
-            <div className={styles.playlist}>
-              <h1>{playlist.name}</h1>
-            </div>
-          ))}
-        </div>
         
+        {buttonV === true ? (
+          <div>
+            <button onClick={hadleShowArtist} className={styles.button}>Artistas</button>
+            <button onClick={hadleShowAlbum} className={styles.button}>Álbuns</button>
+            <button onClick={hadleShowPlaylist} className={styles.button}>Playlists</button>
+          </div>
+        ): null}
+
+        
+        {showArtist === true ? (
+          <div className={styles.track_container} >
+            {artistsList.map(artist=> <Track track={artist} key={artist.id}/>)}
+          </div>
+        ): null}
+        
+        {showAlbum === true ? (
+        <div className={styles.track_container}>
+          {albumList.map(album=> <Track track={album} key={album.id}/>)}
+        </div>
+        ): null}
+
+        {showPlaylist === true ? (
+        <div className={styles.track_container}>
+          {playlistList.map(playlist=> <Track track={playlist} key={playlist.id}/>)}
+        </div>
+        ): null}
       </main>
 
       <footer className={styles.footer}>
