@@ -164,5 +164,8 @@ export default function Redirect() {
           </>
         ) : null}
         </main>
+        <footer className={styles.footer}>
+          Feito com ❤️ por Bruno Coutinho
+        </footer>
         </div>
 )}
