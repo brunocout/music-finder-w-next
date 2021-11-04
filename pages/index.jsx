@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Track from '../components/Track'
 import Categories from '../components/Categories'
 import { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } from '../lib/spotify'
+import Loading from '../components/loading'
 
 import styles from '../styles/Home.module.css'
 
@@ -21,6 +22,8 @@ export default function Redirect() {
   const [token, setToken] = useState('')
   const [featured, setFeatured] = useState([])
   const [showFeatured, setShowFeatured] = useState(true)
+  const [removeLoading, setRemoveLoading] = useState(false)
+  const [removeContent, setRemoveContent] =  useState(false)
 
   useEffect(async ()  => {
 
@@ -43,7 +46,7 @@ export default function Redirect() {
     const json = await resp.json()
     console.log(json)
     setFeatured(json.categories.items)
-
+    setRemoveLoading(true)
   }, [])
   
   const handleOnKeyDown = (e) => {
@@ -52,22 +55,31 @@ export default function Redirect() {
     }
   }
 
-  const handleSearch = async () => {
-    if (searchTerm !== null && searchTerm !== undefined && searchTerm !== '' && searchTerm.length !== 0) {
-      setButtonV(true)
-      setShowFeatured(false)
-      const response = await fetch(`https://api.spotify.com/v1/search?query=${searchTerm}&type=album,playlist,artist&?country=BR&locale=sp_BR`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      const json = await response.json()
-      setArtistsList(json.artists.items)
-      setAlbumList(json.albums.items)
-      setPlaylistList(json.playlists.items)
-    } else {
-      console.log('Error')
-    }
+  const handleSearch = () => {
+    setShowFeatured(false)
+    setRemoveLoading(false)
+    setRemoveContent(true)
+    setTimeout(async() => {
+      if (searchTerm !== null && searchTerm !== undefined && searchTerm !== '' && searchTerm.length !== 0) {
+        setButtonV(true)
+        
+        const response = await fetch(`https://api.spotify.com/v1/search?query=${searchTerm}&type=album,playlist,artist&?country=BR&locale=sp_BR`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        const json = await response.json()
+        setArtistsList(json.artists.items)
+        setAlbumList(json.albums.items)
+        setPlaylistList(json.playlists.items)
+        
+      } else {
+        console.log('Error')
+      }
+      setRemoveLoading(true)
+      setRemoveContent(false)
+    }, 1500)
+    
   }
 
   const hadleShowArtist = () => {
@@ -115,44 +127,42 @@ export default function Redirect() {
         </div>
       </header>
       <main className={styles.main}>
-        
-        {buttonV === true ? (
-          <div className={styles.button_container}>
-            <button onClick={hadleShowArtist} className={styles.button}>Artistas</button>
-            <button onClick={hadleShowAlbum} className={styles.button}>Álbuns</button>
-            <button onClick={hadleShowPlaylist} className={styles.button}>Playlists</button>
-          </div>
-        ): null}
-
-        {showFeatured === true ? (
-            <div className={styles.track_container} >
-              
-              {featured.map(categories=> <Categories categories={categories} key={categories.id}/>)}
+        {!removeLoading && <Loading/>}
+        {removeContent !== true ? (
+          <>
+            {buttonV === true ? (
+            <div className={styles.button_container}>
+              <button onClick={hadleShowArtist} className={styles.button}>Artistas</button>
+              <button onClick={hadleShowAlbum} className={styles.button}>Álbuns</button>
+              <button onClick={hadleShowPlaylist} className={styles.button}>Playlists</button>
             </div>
-        ): null}
-        
-        {showArtist === true ? (
-          <div className={styles.track_container} >
-            {artistsList.map(artist=> <Track track={artist} key={artist.id}/>)}
+          ): null}
+          
+          {showFeatured === true ? (
+              <div className={styles.track_container} >
+                {featured.map(categories=> <Categories categories={categories} key={categories.id}/>)}
+              </div>
+          ): null}
+          
+          {showArtist === true ? (
+            <div className={styles.track_container} >
+              {artistsList.map(artist=> <Track track={artist} key={artist.id}/>)}
+            </div>
+          ): null}
+          
+          {showAlbum === true ? (
+          <div className={styles.track_container}>
+            {albumList.map(album=> <Track track={album} key={album.id}/>)}
           </div>
-        ): null}
-        
-        {showAlbum === true ? (
-        <div className={styles.track_container}>
-          {albumList.map(album=> <Track track={album} key={album.id}/>)}
-        </div>
-        ): null}
+          ): null}
 
-        {showPlaylist === true ? (
-        <div className={styles.track_container}>
-          {playlistList.map(playlist=> <Track track={playlist} key={playlist.id}/>)}
+          {showPlaylist === true ? (
+          <div className={styles.track_container}>
+            {playlistList.map(playlist=> <Track track={playlist} key={playlist.id}/>)}
+          </div>
+          ): null}
+          </>
+        ) : null}
+        </main>
         </div>
-        ): null}
-      </main>
-
-      <footer className={styles.footer}>
-        Feito com ❤️ por Bruno Coutinho
-      </footer>
-    </div>
-  )
-}
+)}

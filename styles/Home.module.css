@@ -82,6 +82,7 @@
   cursor: pointer;
   color: gray;
   transition: all 0.3s ease-in-out;
+  outline: none;
 }
 
 .input_container button:hover {
@@ -102,6 +103,7 @@
   border-radius: 5px;
   box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease-in-out;
+  animation: fade 1s ease-in-out;
 }
 
 .track:hover {
@@ -141,6 +143,7 @@
   transition: all 0.2s ease-in-out;
   box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  outline: none;
 }
 .button:hover {
   transform: scale(1.05);
@@ -148,5 +151,29 @@
 
 .button_container {
   margin-bottom: 1rem;
+  animation: fade 1s ease-in-out;
 }
 
+.loading {
+  animation: loading 1s infinite;
+  border: 5px solid #e5e5e5;
+  border-top-color: #444;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+
+@keyframes loading {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
